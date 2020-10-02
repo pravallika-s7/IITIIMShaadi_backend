@@ -1,10 +1,12 @@
-package main
+package datamodels
 
 import (
 	"time"
 
 	"gorm.io/gorm"
 )
+
+//const layout = "1989-10-20T00:00:00+0000"
 
 type (
 	//User registration table
@@ -13,11 +15,11 @@ type (
 		Username string `json:"username"`
 		Fullname string `json:"name"`
 		Email    string `json:"email"`
-		//Password string    `json:"password"`
-		Gender string `json:"gender"`
-		Mobile string `json:"mobile_no"`
-		//DOB    time.Time.Date() `json:"birth_date"`
-		UserId int `gorm:"primaryKey",json:"id"`
+		Password string `json:"password"`
+		Gender   string `json:"gender"`
+		Mobile   string `json:"mobile_no"`
+		DOB      string `json:"birth_date"`
+		UserId   int    `gorm:"primaryKey",json:"id"`
 
 		Friends []Friend `gorm:"foreignkey:UserID;references:UserId"`
 
@@ -32,8 +34,8 @@ type (
 	//Profile of user
 	Profile struct {
 		gorm.Model
-		ProfileFor string `json:"profile_created_for"`
-		//Image
+		ProfileFor string     `json:"profile_created_for"`
+		Image      []byte     `json:"profile_image"`
 		Role       string     `json:"role"`
 		Religion   string     `json:"religion"`
 		Caste      string     `json:"caste"`
@@ -264,6 +266,15 @@ type (
 		Link      string `json:"link"`
 		Image     string `json:"image"`
 		SortOrder int    `json:"sort_order"`
+		//DateAdded time.Time `json:"date_added"`
+	}
+	//Notification
+	Notification struct {
+		gorm.Model
+		ToId   int    `json:"id"`
+		Type   string `json:"type"`
+		Msg    string `json:"message"`
+		Status int    `json:"status"`
 		//DateAdded time.Time `json:"date_added"`
 	}
 )

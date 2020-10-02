@@ -1,10 +1,17 @@
-package main
+package datamodels
 
 import (
+	"encoding/base64"
 	"encoding/json"
+	"fmt"
+	"image"
+	"log"
+	"strings"
 
 	"gorm.io/gorm"
 )
+
+const layout = "1989-10-20T00:00:00+0000"
 
 func (prof *Profile) AddItem(intr Interest) []Interest {
 	prof.Interests = append(prof.Interests, intr)
@@ -16,28 +23,36 @@ func (pc *PartnerChoice) AddItem(marSt PartMartSt) []PartMartSt {
 	return pc.PartMartSts
 }
 
-func userTable(db *gorm.DB, body []byte) {
+func UserTable(db *gorm.DB, body []byte) {
 
 	var userData map[string]interface{}
 	json.Unmarshal(body, &userData)
 	user := userData["basicData"].(map[string]interface{})
-
+	//fmt.Print(user)
+	/*
+		str, ok := user["birth_date"].(string)
+		if !ok {
+			fmt.Printf("ERROR: not a string -> %#v\n", user["birth_date"])
+		}
+		fmt.Printf(str)
+	*/
 	db.Create(&User{Username: user["username"].(string),
 		Fullname: user["name"].(string),
 		Email:    userData["emailData"].(map[string]interface{})["email"].(string),
-		Gender:   user["gender"].(string),
-		Mobile:   user["mobile_no"].(string),
-		//DOB:      user["birth_data"].(string),
+		//Password: user["password"].(string), //HashPassword can also be used
+		Gender: user["gender"].(string),
+		Mobile: user["mobile_no"].(string),
+		DOB:    user["birth_date"].(string),
 		UserId: int(userData["emailData"].(map[string]interface{})["id"].(float64)),
 	})
 }
 
-func profileTable(db *gorm.DB, body []byte) {
+func ProfileTable(db *gorm.DB, body []byte) {
 
 	var profileData map[string]interface{}
 	json.Unmarshal(body, &profileData)
 	profile := profileData["basicData"].(map[string]interface{})
-
+	//fmt.Print(profile)
 	interests := []Interest{}
 	prof := Profile{Interests: interests}
 
@@ -47,7 +62,28 @@ func profileTable(db *gorm.DB, body []byte) {
 		prof.AddItem(item)
 	}
 
+	Image, ok := profile["profile_image"].(string)
+	if !ok {
+		fmt.Printf("ERROR: not a string -> %#v\n", profile["profile_image"])
+	}
+	//fmt.Printf(image)
+	/*i := strings.Index(image, ",")
+	if i < 0 {
+		log.Fatal("no comma")
+	}
+	dec := base64.NewDecoder(base64.StdEncoding, strings.NewReader(image[i+1:]))
+	fmt.Print(dec)
+	*/
+
+	reader := base64.NewDecoder(base64.StdEncoding, strings.NewReader(Image))
+	config, format, err := image.DecodeConfig(reader)
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println("Width:", config.Width, "Height:", config.Height, "Format:", format)
+
 	db.Create(&Profile{ProfileFor: profile["profile_created_for"].(string),
+		//Image:
 		Religion:   profile["religion"].(string),
 		Caste:      profile["caste"].(string),
 		MotherTng:  profile["mother_tounge"].(string),
@@ -64,7 +100,7 @@ func profileTable(db *gorm.DB, body []byte) {
 	})
 }
 
-func familyTable(db *gorm.DB, body []byte) {
+func FamilyTable(db *gorm.DB, body []byte) {
 
 	var familyData map[string]interface{}
 	json.Unmarshal(body, &familyData)
@@ -80,7 +116,7 @@ func familyTable(db *gorm.DB, body []byte) {
 	})
 }
 
-func educationTable(db *gorm.DB, body []byte) {
+func EducationTable(db *gorm.DB, body []byte) {
 
 	var educationData map[string]interface{}
 	json.Unmarshal(body, &educationData)
@@ -99,7 +135,7 @@ func educationTable(db *gorm.DB, body []byte) {
 	})
 }
 
-func jobTable(db *gorm.DB, body []byte) {
+func JobTable(db *gorm.DB, body []byte) {
 
 	var jobData map[string]interface{}
 	json.Unmarshal(body, &jobData)
@@ -114,7 +150,7 @@ func jobTable(db *gorm.DB, body []byte) {
 	})
 }
 
-func addressTable(db *gorm.DB, body []byte) {
+func AddressTable(db *gorm.DB, body []byte) {
 
 	var addressData map[string]interface{}
 	json.Unmarshal(body, &addressData)
@@ -134,7 +170,7 @@ func addressTable(db *gorm.DB, body []byte) {
 	})
 }
 
-func otherTable(db *gorm.DB, body []byte) {
+func OtherTable(db *gorm.DB, body []byte) {
 
 	var otherData map[string]interface{}
 	json.Unmarshal(body, &otherData)
@@ -162,7 +198,7 @@ func otherTable(db *gorm.DB, body []byte) {
 	})
 }
 
-func partnerChoiceTable(db *gorm.DB, body []byte) {
+func PartnerChoiceTable(db *gorm.DB, body []byte) {
 
 	var partnerChoiceData map[string]interface{}
 	json.Unmarshal(body, &partnerChoiceData)
@@ -198,7 +234,7 @@ func partnerChoiceTable(db *gorm.DB, body []byte) {
 	})
 }
 
-func emailDataTable(db *gorm.DB, body []byte) {
+func EmailDataTable(db *gorm.DB, body []byte) {
 
 	var emailData map[string]interface{}
 	json.Unmarshal(body, &emailData)
@@ -231,7 +267,7 @@ func emailDataTable(db *gorm.DB, body []byte) {
 	})
 }
 
-func verificationDataTable(db *gorm.DB, body []byte) {
+func VerificationDataTable(db *gorm.DB, body []byte) {
 
 	var verificationData map[string]interface{}
 	json.Unmarshal(body, &verificationData)
